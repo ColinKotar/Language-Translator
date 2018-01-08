@@ -46,5 +46,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# datasets
+# datasets + related
 /data
+/__pycache__
+/checkpoints
+*.p
+*.ipynb_checkpoints
