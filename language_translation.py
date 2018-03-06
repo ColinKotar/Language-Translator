@@ -10,10 +10,9 @@ from tensorflow.python.layers.core import Dense
 # load data from subset of larger dataset
 source_path = 'data/small_vocab_en'
 target_path = 'data/small_vocab_fr'
+save_path = 'checkpoints/dev'
 source_text = helper.load_data(source_path)
 target_text = helper.load_data(target_path)
-
-save_path = 'checkpoints/dev'
 
 
 def print_data(view_sentence_range=(0, 10)):
@@ -54,10 +53,6 @@ def text_to_ids(source_text, target_text, source_vocab_to_int, target_vocab_to_i
 
     # return tuple of source_id_text and target_id_text
     return source_id_text, target_id_text
-
-
-helper.preprocess_and_save_data(source_path, target_path, text_to_ids)
-(source_int_text, target_int_text), (source_vocab_to_int, target_vocab_to_int), _ = helper.load_preprocess()
 
 
 def check_tf_gpu():
@@ -303,54 +298,6 @@ def seq2seq_model(input_data, target_data, keep_prob, batch_size,
     # return tuple of train & infer output
     return train_output, infer_output
 
-def build_model():
-
-    (source_int_text, target_int_text), (source_vocab_to_int, target_vocab_to_int), _ = helper.load_preprocess()
-    max_target_sentence_length = max([len(sentence) for sentence in source_int_text])
-
-    train_graph = tf.Graph()
-    with train_graph.as_default():
-        input_data, targets, lr, keep_prob, target_sequence_length, max_target_sequence_length, source_sequence_length = model_inputs()
-
-        #sequence_length = tf.placeholder_with_default(max_target_sentence_length, None, name='sequence_length')
-        input_shape = tf.shape(input_data)
-
-        train_logits, inference_logits = seq2seq_model(tf.reverse(input_data, [-1]),
-                                                       targets,
-                                                       keep_prob,
-                                                       batch_size,
-                                                       source_sequence_length,
-                                                       target_sequence_length,
-                                                       max_target_sequence_length,
-                                                       len(source_vocab_to_int),
-                                                       len(target_vocab_to_int),
-                                                       encoding_embedding_size,
-                                                       decoding_embedding_size,
-                                                       rnn_size,
-                                                       num_layers,
-                                                       target_vocab_to_int)
-
-
-        training_logits = tf.identity(train_logits.rnn_output, name='logits')
-        inference_logits = tf.identity(inference_logits.sample_id, name='predictions')
-
-        masks = tf.sequence_mask(target_sequence_length, max_target_sequence_length, dtype=tf.float32, name='masks')
-
-        with tf.name_scope("optimization"):
-            # Loss function
-            cost = tf.contrib.seq2seq.sequence_loss(
-                training_logits,
-                targets,
-                masks)
-
-            # Optimizer
-            optimizer = tf.train.AdamOptimizer(lr)
-
-            # Gradient Clipping
-            gradients = optimizer.compute_gradients(cost)
-            capped_gradients = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gradients if grad is not None]
-            train_op = optimizer.apply_gradients(capped_gradients)
-
 
 def pad_sentence_batch(sentence_batch, pad_int):
     """Pad sentences with <PAD> so that each sentence of a batch has the same length"""
@@ -403,6 +350,7 @@ def get_accuracy(target, logits):
 
 
 def train_model():
+
     # Split data to training and validation sets
     train_source = source_int_text[batch_size:]
     train_target = target_int_text[batch_size:]
@@ -413,6 +361,7 @@ def train_model():
                                                                                                                  batch_size,
                                                                                                                  source_vocab_to_int['<PAD>'],
                                                                                                                  target_vocab_to_int['<PAD>']))
+
     with tf.Session(graph=train_graph) as sess:
         sess.run(tf.global_variables_initializer())
 
@@ -463,9 +412,7 @@ def train_model():
         print('Model Trained and Saved')
 
         helper.save_params(save_path)
-
-        _, (source_vocab_to_int, target_vocab_to_int), (source_int_to_vocab, target_int_to_vocab) = helper.load_preprocess()
-        load_path = helper.load_params()
+        helper.preprocess_and_save_data(source_path, target_path, text_to_ids)
 
 
 def sentence_to_seq(sentence, vocab_to_int):
@@ -490,6 +437,7 @@ def sentence_to_seq(sentence, vocab_to_int):
 
 
 def translate(translate_sentence='he saw a old yellow truck .'):
+
     translate_sentence = sentence_to_seq(translate_sentence, source_vocab_to_int)
 
     loaded_graph = tf.Graph()
@@ -536,7 +484,7 @@ def run_tests(run=False):
 
 if __name__ == '__main__':
 
-    run_tests()
+    run_tests(True)
 
     # Number of Epochs
     epochs = 5
@@ -555,7 +503,59 @@ if __name__ == '__main__':
     keep_probability = 0.9
     display_step = 25
 
-    build_model()
+    # preprocess and save data for later use
+    helper.preprocess_and_save_data(source_path, target_path, text_to_ids)
+    (source_int_text, target_int_text), (source_vocab_to_int, target_vocab_to_int), _ = helper.load_preprocess()
+
+    # building the model
+    (source_int_text, target_int_text), (source_vocab_to_int, target_vocab_to_int), _ = helper.load_preprocess()
+    max_target_sentence_length = max([len(sentence) for sentence in source_int_text])
+
+    train_graph = tf.Graph()
+    with train_graph.as_default():
+        input_data, targets, lr, keep_prob, target_sequence_length, max_target_sequence_length, source_sequence_length = model_inputs()
+
+        #sequence_length = tf.placeholder_with_default(max_target_sentence_length, None, name='sequence_length')
+        input_shape = tf.shape(input_data)
+
+        train_logits, inference_logits = seq2seq_model(tf.reverse(input_data, [-1]),
+                                                       targets,
+                                                       keep_prob,
+                                                       batch_size,
+                                                       source_sequence_length,
+                                                       target_sequence_length,
+                                                       max_target_sequence_length,
+                                                       len(source_vocab_to_int),
+                                                       len(target_vocab_to_int),
+                                                       encoding_embedding_size,
+                                                       decoding_embedding_size,
+                                                       rnn_size,
+                                                       num_layers,
+                                                       target_vocab_to_int)
+
+
+        training_logits = tf.identity(train_logits.rnn_output, name='logits')
+        inference_logits = tf.identity(inference_logits.sample_id, name='predictions')
+
+        masks = tf.sequence_mask(target_sequence_length, max_target_sequence_length, dtype=tf.float32, name='masks')
+
+        with tf.name_scope("optimization"):
+            # Loss function
+            cost = tf.contrib.seq2seq.sequence_loss(
+                training_logits,
+                targets,
+                masks)
+
+            # Optimizer
+            optimizer = tf.train.AdamOptimizer(lr)
+
+            # Gradient Clipping
+            gradients = optimizer.compute_gradients(cost)
+            capped_gradients = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gradients if grad is not None]
+            train_op = optimizer.apply_gradients(capped_gradients)
+
+    # train the built model
     train_model()
 
+    # translate English to French by passing English phrase to translate
     translate()
