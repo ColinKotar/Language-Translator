@@ -430,13 +430,16 @@ def sentence_to_seq(sentence, vocab_to_int):
     sentence =  ['<UNK>' if x not in vocab_to_int else x for x in sentence.split()]
 
     # convert word into ids
-    sentence_id = [vocab_to_int[word] for word in sentence.split()]
+    sentence_id = [vocab_to_int[word] for word in sentence]
 
     # return list of word ids
     return sentence_id
 
 
 def translate(translate_sentence='he saw a old yellow truck .'):
+
+    _, (source_vocab_to_int, target_vocab_to_int), (source_int_to_vocab, target_int_to_vocab) = helper.load_preprocess()
+    load_path = helper.load_params()
 
     translate_sentence = sentence_to_seq(translate_sentence, source_vocab_to_int)
 
@@ -469,17 +472,17 @@ def translate(translate_sentence='he saw a old yellow truck .'):
 def run_tests(run=False):
 
     if run:
-        import tests as t
+        import problem_unittests as t
 
-        t.test_decoding_layer()
-        t.test_decoding_layer_infer()
-        t.test_decoding_layer_train()
-        t.test_encoding_layer()
-        t.test_model_inputs()
-        t.test_process_encoding_input()
-        t.test_sentence_to_seq()
-        t.test_seq2seq_model()
-        t.test_text_to_ids()
+        t.test_decoding_layer(decoding_layer)
+        t.test_decoding_layer_infer(decoding_layer_infer)
+        t.test_decoding_layer_train(decoding_layer_train)
+        t.test_encoding_layer(encoding_layer)
+        t.test_model_inputs(model_inputs)
+        t.test_process_encoding_input(process_decoder_input)
+        t.test_sentence_to_seq(sentence_to_seq)
+        t.test_seq2seq_model(seq2seq_model)
+        t.test_text_to_ids(text_to_ids)
 
 
 if __name__ == '__main__':
