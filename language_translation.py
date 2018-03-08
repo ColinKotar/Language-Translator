@@ -469,25 +469,22 @@ def translate(translate_sentence='he saw a old yellow truck .'):
     print('  French Words: {}'.format(" ".join([target_int_to_vocab[i] for i in translate_logits])))
 
 
-def run_tests(run=False):
+def run_tests():
 
-    if run:
-        import problem_unittests as t
+    import problem_unittests as t
 
-        t.test_decoding_layer(decoding_layer)
-        t.test_decoding_layer_infer(decoding_layer_infer)
-        t.test_decoding_layer_train(decoding_layer_train)
-        t.test_encoding_layer(encoding_layer)
-        t.test_model_inputs(model_inputs)
-        t.test_process_encoding_input(process_decoder_input)
-        t.test_sentence_to_seq(sentence_to_seq)
-        t.test_seq2seq_model(seq2seq_model)
-        t.test_text_to_ids(text_to_ids)
+    t.test_decoding_layer(decoding_layer)
+    t.test_decoding_layer_infer(decoding_layer_infer)
+    t.test_decoding_layer_train(decoding_layer_train)
+    t.test_encoding_layer(encoding_layer)
+    t.test_model_inputs(model_inputs)
+    t.test_process_encoding_input(process_decoder_input)
+    t.test_sentence_to_seq(sentence_to_seq)
+    t.test_seq2seq_model(seq2seq_model)
+    t.test_text_to_ids(text_to_ids)
 
 
 if __name__ == '__main__':
-
-    run_tests(True)
 
     # Number of Epochs
     epochs = 5
