@@ -4,10 +4,10 @@ A Recurrent Neural Network (RNN) with Long Short Term Memory (LSTM) cells learns
 
 ## Getting Started
 
-Simply run the Jupyter Notebook dlnd_language_translation.ipynb or you can run the script language-translation.py
+Simply run the Jupyter Notebook dlnd_language_translation.ipynb or you can run the script language_translation.py
 
 ```
-python language-translation.py
+python language_translation.py
 ```
 
 To translate a sentence, assign the variable translate_sentence a string.
@@ -24,7 +24,7 @@ You can install the required packages through Anaconda's environment manager usi
 conda env create -f machine-learning.yml
 ```
 
-Then, activate the environment and run language-translation.py
+Then, activate the environment and run language_translation.py
 
 ```
 activate machine-learning
